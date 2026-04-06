@@ -9,6 +9,12 @@ from routes.repo import repos
 from services.analyze_service import extract_data_models
 from routes.repo import repos
 
+from services.analyze_service import analyze_complexity_repo
+from routes.repo import repos
+
+from services.analyze_service import analyze_test_coverage
+from routes.repo import repos
+
 router = APIRouter()
 
 @router.post("/analyze/ingest/{repo_id}")
@@ -51,17 +57,26 @@ def data_model(repo_id: str):
         "relationships": []  # will improve later
     }
 
-
 @router.post("/analyze/complexity/{repo_id}")
 def complexity(repo_id: str):
-    return {
-        "hotspots": []
-    }
+    repo = repos.get(repo_id)
 
+    if not repo:
+        return {"error": "Repo not found"}
+
+    hotspots = analyze_complexity_repo(repo["path"])
+
+    return {
+        "hotspots": hotspots
+    }
 
 @router.post("/analyze/tests/{repo_id}")
 def tests(repo_id: str):
-    return {
-        "covered": [],
-        "uncovered": []
-    }
+    repo = repos.get(repo_id)
+
+    if not repo:
+        return {"error": "Repo not found"}
+
+    coverage = analyze_test_coverage(repo["path"])
+
+    return coverage
