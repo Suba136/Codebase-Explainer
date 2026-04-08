@@ -1,26 +1,22 @@
 from fastapi import APIRouter
+from services.agent_service import run_pipeline, build_report
 
 router = APIRouter()
 
 @router.post("/agent/run/{repo_id}")
 def run_agent(repo_id: str):
+    repo = run_pipeline(repo_id)
+    
+    if "error" in repo:
+        return repo
+        
     return {
-        "status": "completed",
-        "report_id": "rep123"
+        "status": repo.get("status"),
+        "stages": repo.get("stages"),
+        "errors": repo.get("errors")
     }
 
 
 @router.get("/agent/report/{repo_id}")
 def get_report(repo_id: str):
-    return {
-        "summary": "Project summary",
-        "architecture": "Architecture details",
-        "data_models": "Entities",
-        "flow": "Execution flow",
-        "hotspots": [],
-        "tests": [],
-        "starter_tasks": [
-            "Add tests",
-            "Refactor module"
-        ]
-    }
+    return build_report(repo_id)

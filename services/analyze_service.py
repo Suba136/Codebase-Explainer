@@ -218,3 +218,6 @@ def extract_entities_generic(file_path, language):
         print("Error reading:", file_path, str(e))
 
     return entities
+
+def trace_flow(path):
+    return {"flow": f"Mock flow starting from {path}"}

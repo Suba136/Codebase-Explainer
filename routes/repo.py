@@ -1,11 +1,9 @@
 from fastapi import APIRouter
 import uuid
 from services.repo_service import clone_repo
+from services.agent_service import repos, init_repo_state
 
 router = APIRouter()
-
-# temporary in-memory storage
-repos = {}
 
 @router.post("/repo")
 def create_repo(data: dict):
@@ -13,11 +11,8 @@ def create_repo(data: dict):
 
     repo_path = clone_repo(data["url"], repo_id)
 
-    repos[repo_id] = {
-        "url": data["url"],
-        "path": repo_path,
-        "status": "uploaded"
-    }
+    # Initialize the agent state store
+    init_repo_state(repo_id, repo_path, data["url"])
 
     return {
         "repo_id": repo_id,
