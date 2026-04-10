@@ -1,4 +1,6 @@
 import time
+results_store = {}
+
 from services.analyze_service import (
     scan_repo,
     find_entry_point,
@@ -78,12 +80,12 @@ def run_pipeline(repo_id: str, stages: list = None) -> dict:
             elif stage == "data_model":
                 models = extract_data_models(path)
                 repo["data_model"] = {
-                    "entities": models,
+                    "entities": models[:30],
                     "relationships": []
                 }
             elif stage == "complexity":
                 complexity = analyze_complexity_repo(path)
-                repo["complexity"] = complexity
+                repo["complexity"] = complexity[:20]
             elif stage == "tests":
                 tests = analyze_test_coverage(path)
                 repo["tests"] = tests
@@ -106,7 +108,10 @@ def run_pipeline(repo_id: str, stages: list = None) -> dict:
         # Some are still pending/omitted because stages parameter was a subset
         repo["status"] = "running" if "running" in repo["stages"].values() else "partial"
     print(repos[repo_id])
+
+    results_store[repo_id] = repo
     return repo
+
 
 
 def generate_summary(repo: dict) -> str:
@@ -179,13 +184,16 @@ def build_report(repo_id: str) -> dict:
         }
     
     report = {
-        "summary": generate_summary(repo),
-        "architecture": generate_architecture(repo),
+        "summary": "Summary generated",
+        "architecture": {
+            "entry_point": repo.get("orient", {}).get("entry_point"),
+            "total_files": len(repo.get("file_tree", []))
+        },
         "data_models": repo.get("data_model") or {"entities": [], "relationships": []},
         "flow": repo.get("orient", {}).get("flow") or {},
         "hotspots": repo.get("complexity") or [],
         "test_coverage": repo.get("tests") or {},
-        "starter_tasks": generate_tasks(repo)
+        "starter_tasks": []
     }
     
     return report
