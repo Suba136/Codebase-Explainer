@@ -7,21 +7,55 @@ def scan_repo(path):
 
     for root, dirs, files in os.walk(path):
         file_tree[root] = files
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
 
     return file_tree
 
 def find_entry(path):
     for root, _, files in os.walk(path):
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
         if "main.py" in files:
             return os.path.join(root, "main.py")
         
 def find_entry_point(path):
     possible_files = ["main.py", "app.py", "index.js", "server.js"]
 
+    file_count = 0
+
     for root, _, files in os.walk(path):
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
+
         for file in files:
+            if not file.endswith((".py", ".js", ".ts", ".java")):
+                continue
+
+            file_count += 1
+            if file_count > 80:
+                break
+
+            file_path = os.path.join(root, file)
+
+            # Skip large files
+            if os.path.getsize(file_path) > 100000:
+                continue
+
+            # FIRST: check content (important)
+            try:
+                with open(file_path, "r", errors="ignore") as f:
+                    code = f.read()
+
+                if "__name__" in code and "__main__" in code:
+                    return file_path
+
+            except:
+                continue
+
+            # SECOND: fallback to known names
             if file in possible_files:
-                return os.path.join(root, file)
+                return file_path
 
     return "Entry point not found"
 
@@ -49,9 +83,19 @@ def extract_classes_from_file(file_path):
 def extract_data_models(path):
     all_entities = []
 
+    file_count = 0
     for root, _, files in os.walk(path):
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
         for file in files:
+            if not file.endswith((".py", ".js", ".ts", ".java")):
+                continue
+            file_count += 1
+            if file_count > 80:
+                break
             file_path = os.path.join(root, file)
+            if os.path.getsize(file_path) > 100000:
+                continue
 
             language = detect_language(file)
 
@@ -86,9 +130,19 @@ def analyze_complexity_file(file_path):
 def analyze_complexity_repo(path):
     hotspots = []
 
+    file_count = 0
     for root, _, files in os.walk(path):
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
         for file in files:
+            if not file.endswith((".py", ".js", ".ts", ".java")):
+                continue
+            file_count += 1
+            if file_count > 80:
+                break
             file_path = os.path.join(root, file)
+            if os.path.getsize(file_path) > 100000:
+                continue
 
             #  Python (real complexity)
             if file.endswith(".py"):
@@ -164,8 +218,16 @@ def analyze_test_coverage(path):
     tested_files = []
     all_files = []
 
+    file_count = 0
     for root, _, files in os.walk(path):
+        if any(skip in root for skip in ["node_modules", ".git", "__pycache__", "venv", "dist", "build"]):
+            continue
         for file in files:
+            if not file.endswith((".py", ".js", ".ts", ".java")):
+                continue
+            file_count += 1
+            if file_count > 80:
+                break
             if file.endswith(".py"):
                 all_files.append(file)
 
