@@ -1,11 +1,11 @@
 import time
 import os
 from dotenv import load_dotenv
-from anthropic import Anthropic
+from groq import Groq
 
 load_dotenv()
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 results_store = {}
 
 from services.analyze_service import (
@@ -122,7 +122,8 @@ def run_pipeline(repo_id: str, stages: list = None) -> dict:
 
 
 def generate_llm_summary(repo):
-    prompt = f"""
+    try:
+        prompt = f"""
 You are a senior software engineer.
 
 Explain this codebase:
@@ -132,20 +133,23 @@ Entities: {repo.get("data_model", {}).get("entities")}
 Hotspots: {repo.get("complexity")}
 
 Give:
-1. Simple summary
-2. Architecture explanation
-3. Where a beginner should start
+1. Summary
+2. Architecture
+3. Beginner starting point
 """
 
-    response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=500,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",   # ✅ FINAL MODEL
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-    return response.content[0].text
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print("GROQ ERROR:", e)
+        return "LLM failed"
 
 def generate_architecture(repo: dict) -> dict:
     entry_point = "Unknown"
