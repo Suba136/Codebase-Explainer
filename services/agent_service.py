@@ -1,4 +1,11 @@
 import time
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+
+load_dotenv()
+
+client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 results_store = {}
 
 from services.analyze_service import (
@@ -114,33 +121,31 @@ def run_pipeline(repo_id: str, stages: list = None) -> dict:
 
 
 
-def generate_summary(repo: dict) -> str:
-    summary = []
-    
-    # File count
-    if repo.get("ingest"):
-        total_files = len(repo["ingest"].get("files", []))
-        summary.append(f"The repository contains {total_files} files.")
-        
-    # Entry point
-    if repo.get("orient") and repo["orient"].get("entry_point"):
-        entry = repo["orient"]["entry_point"]
-        summary.append(f"The main entry point was identified as {entry}.")
-        
-    # Entities / Models counts
-    if repo.get("data_model"):
-        model_count = len(repo["data_model"].get("entities", []))
-        summary.append(f"Extracted {model_count} data models/entities.")
+def generate_llm_summary(repo):
+    prompt = f"""
+You are a senior software engineer.
 
-    # Hotspots
-    if repo.get("complexity"):
-        hotspots_count = len(repo["complexity"])
-        if hotspots_count > 0:
-            summary.append(f"Found {hotspots_count} complexity hotspots needing review.")
-        else:
-            summary.append("No major complexity hotspots detected.")
-            
-    return " ".join(summary) if summary else "No summary available."
+Explain this codebase:
+
+Entry Point: {repo.get("orient", {}).get("entry_point")}
+Entities: {repo.get("data_model", {}).get("entities")}
+Hotspots: {repo.get("complexity")}
+
+Give:
+1. Simple summary
+2. Architecture explanation
+3. Where a beginner should start
+"""
+
+    response = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=500,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.content[0].text
 
 def generate_architecture(repo: dict) -> dict:
     entry_point = "Unknown"
@@ -184,7 +189,7 @@ def build_report(repo_id: str) -> dict:
         }
     
     report = {
-        "summary": "Summary generated",
+        "summary": generate_llm_summary(repo),
         "architecture": {
             "entry_point": repo.get("orient", {}).get("entry_point"),
             "total_files": len(repo.get("file_tree", []))
