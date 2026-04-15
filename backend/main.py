@@ -6,7 +6,7 @@ app = FastAPI(title="Codebase Exploration Agent")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= ["http://localhost:5173", "https://127.0.0.1:5173", "https://codebase-explainer-mt4.vercel.app", "https://codebase-explainer-eex8.onrender.com"],
+    allow_origins= ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
