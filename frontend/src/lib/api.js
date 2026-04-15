@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const fetchRepoId = async (payload) => {
   const response = await fetch(`${API_BASE_URL}/repo`, {
