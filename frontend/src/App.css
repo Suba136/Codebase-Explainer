@@ -1,0 +1,24 @@
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  margin-left: 64px;
+  padding: var(--space-8);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-bottom: 64px;
+    padding: var(--space-5);
+  }
+}
+
+/* Sidebar hover state shift for main content */
+.sidebar:hover ~ .main-content {
+  margin-left: 220px;
+}
