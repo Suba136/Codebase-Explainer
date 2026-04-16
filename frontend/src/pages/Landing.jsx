@@ -20,17 +20,17 @@ const Landing = () => {
         <div className="stat-pills">
           <div className="stat-pill">
             <Code2 size={14} className="stat-icon" />
-            <span>12k repos analyzed</span>
+            <span>Multi-repo support</span>
           </div>
           <div className="stat-pill">
             <Sparkles size={14} className="stat-icon" />
-            <span>99ms avg response</span>
+            <span>Deep Code Analysis</span>
           </div>
           <div className="stat-pill">
             <div className="status-dot-container">
               <div className="status-dot"></div>
             </div>
-            <span>GPT-4o powered</span>
+            <span>AI powered insights</span>
           </div>
         </div>
       </div>

@@ -7,12 +7,12 @@ const Ingest = () => {
     const [fileTree, setFileTree] = useState(null);
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
-    const { repoId } = useRepo();
+    const { repoId, updateRepoData } = useRepo();
 
     const processFileTree = (rawTree) => {
         if (!rawTree) return [];
 
-        return Object.keys(rawTree)
+        const processed = Object.keys(rawTree)
             .filter(path => !path.includes('/.git'))
             .map(path => {
                 const cleanPath = path.split('/').slice(2).join('/') || 'Root';
@@ -21,6 +21,14 @@ const Ingest = () => {
                     files: rawTree[path]
                 };
             });
+        
+        const totalFiles = processed.reduce((acc, folder) => acc + folder.files.length, 0);
+        updateRepoData({ 
+            files: totalFiles, 
+            fileTree: processed 
+        });
+
+        return processed;
     };
 
     const handleIngest = async () => {
@@ -72,7 +80,7 @@ const Ingest = () => {
                         )}
 
                         <button 
-                            className="btn-primary w-full"
+                            className="btn-primary w-full mt-5!"
                             onClick={handleIngest}
                             disabled={loading}
                         >

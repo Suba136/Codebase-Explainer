@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { orientRepo } from '../lib/api';
 import { useRepo } from '../context/RepoContext';
-import { 
-  Folder, FileCode, ChevronRight, ListTree, 
-  Activity, Zap, Compass, Layers, 
-  FileStack, Code2, Link, Hash, Loader2
+import {
+    Folder, FileCode, ChevronRight, ListTree,
+    Activity, Zap, Compass, Layers,
+    FileStack, Code2, Link, Hash, Loader2
 } from 'lucide-react';
 
 const Orient = () => {
     const [entryPoint, setEntryPoint] = useState(null);
     const [flowSummary, setFlowSummary] = useState(null);
     const [loading, setLoading] = useState(false);
-    const { repoId } = useRepo();
+    const { repoId, repoData, updateRepoData } = useRepo();
 
     const handleOrient = async () => {
         if (!repoId) return alert("Please connect a repo first!");
@@ -20,6 +20,15 @@ const Orient = () => {
             const result = await orientRepo(repoId);
             setEntryPoint(result.entry_point);
             setFlowSummary(result.flow_summary);
+
+            // Update RepoContext if additional metrics are provided
+            if (result.metrics) {
+                updateRepoData({
+                    functions: result.metrics.functions || 0,
+                    dependencies: result.metrics.dependencies || 0,
+                    loc: result.metrics.loc || '0',
+                });
+            }
         } catch (error) {
             console.error("Orientation Error:", error);
         } finally {
@@ -28,7 +37,7 @@ const Orient = () => {
     };
 
     return (
-        <div className="space-y-8 py-4">
+        <div className="space-y-8 py-4 flex flex-col gap-10">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold font-display flex items-center gap-3">
@@ -64,7 +73,7 @@ const Orient = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">Files</p>
-                        <p className="text-2xl font-bold font-mono text-green-glow">142</p>
+                        <p className="text-2xl font-bold font-mono text-green-glow">{repoData.files}</p>
                     </div>
                 </div>
                 <div className="card flex items-center gap-4 py-4">
@@ -73,7 +82,7 @@ const Orient = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">Functions</p>
-                        <p className="text-2xl font-bold font-mono text-green-glow">846</p>
+                        <p className="text-2xl font-bold font-mono text-green-glow">{repoData.functions || '?'}</p>
                     </div>
                 </div>
                 <div className="card flex items-center gap-4 py-4">
@@ -82,7 +91,7 @@ const Orient = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">Dependencies</p>
-                        <p className="text-2xl font-bold font-mono text-green-glow">32</p>
+                        <p className="text-2xl font-bold font-mono text-green-glow">{repoData.dependencies || '?'}</p>
                     </div>
                 </div>
                 <div className="card flex items-center gap-4 py-4">
@@ -91,7 +100,7 @@ const Orient = () => {
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">LOC</p>
-                        <p className="text-2xl font-bold font-mono text-green-glow">12.4k</p>
+                        <p className="text-2xl font-bold font-mono text-green-glow">{repoData.loc || '?'}</p>
                     </div>
                 </div>
             </div>
@@ -113,13 +122,13 @@ const Orient = () => {
                         ) : (
                             <div className="space-y-4 p-2">
                                 {typeof entryPoint === 'string' ? (
-                                    entryPoint.split('/').map((segment, index, array) => (
-                                        <div 
+                                    entryPoint.split(/[/\\]/).map((segment, index, array) => (
+                                        <div
                                             key={index}
                                             className="flex items-center gap-3 font-mono text-sm"
                                             style={{ marginLeft: `${index * 20}px` }}
                                         >
-                                            <div className="w-px h-6 bg-green-muted/30 -ml-3 mb-4"></div>
+                                            {index > 0 && <div className="w-px h-6 bg-green-muted/30 -ml-3 mb-4"></div>}
                                             {index === array.length - 1 ? (
                                                 <div className="badge">
                                                     <FileCode size={12} />
@@ -134,7 +143,7 @@ const Orient = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <pre className="text-xs font-mono text-green-glow bg-bg-deep p-4 rounded-lg">
+                                    <pre className="text-xs font-mono text-green-glow bg-bg-deep p-4 rounded-lg overflow-x-auto">
                                         {JSON.stringify(entryPoint, null, 2)}
                                     </pre>
                                 )}
@@ -150,7 +159,7 @@ const Orient = () => {
                         <h3 className="font-display font-bold text-lg">Logic Flow Summary</h3>
                     </div>
 
-                    <div className="card-inset flex-grow overflow-y-auto max-h-[400px] p-6">
+                    <div className="card-inset grow overflow-y-auto max-h-[400px] p-6">
                         {!flowSummary ? (
                             <div className="flex flex-col items-center justify-center py-20 text-muted opacity-40">
                                 <Layers size={48} className="mb-4" />
@@ -174,12 +183,12 @@ const Orient = () => {
                     <Layers size={20} className="text-green-primary" />
                     <h3 className="font-display font-bold text-lg">Architecture Overview</h3>
                 </div>
-                
+
                 <div className="card-inset h-[300px] flex items-center justify-center relative overflow-hidden">
                     <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 800 300">
                         <path d="M100,150 L250,150 M450,150 L600,150 M250,150 L350,100 M250,150 L350,200 M350,100 L450,150 M350,200 L450,150" stroke="var(--green-primary)" strokeWidth="2" fill="none" />
                     </svg>
-                    
+
                     <div className="relative flex gap-12 items-center">
                         <div className="card py-3 px-6 shadow-sm border border-green-muted/20">
                             <span className="font-mono text-xs font-bold text-green-glow">FRONTEND</span>

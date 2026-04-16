@@ -10,7 +10,7 @@ const DataModel = () => {
     const [entities, setEntities] = useState([]);
     const [relationships, setRelationships] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedEntity, setSelectedEntity] = useState(null);
+    const [selectedEntity, setSelectedEntity] = useState(false);
     const { repoId } = useRepo();
 
     const handleDataModel = async () => {
@@ -56,30 +56,26 @@ const DataModel = () => {
                 </button>
             </div>
 
-            <div className="flex flex-grow gap-6 min-h-0">
+            <div className="flex flex-row gap-6 min-h-0">
                 {/* Entity Canvas */}
-                <div className="card flex-grow relative overflow-hidden flex flex-col">
+                <div className="card grow relative overflow-hidden flex flex-col">
                     <div className="flex items-center gap-2 mb-6 border-b border-green-muted/20 pb-4">
                         <Network size={20} className="text-green-primary" />
                         <h3 className="font-display font-bold text-lg">Entity Relationship Graph</h3>
                     </div>
                     
-                    <div className="card-inset flex-grow relative overflow-auto p-12 bg-bg-deep/30">
+                    <div className="h-min-[200px] grow card-inset relative overflow-auto p-12 bg-bg-deep/30">
                         {entities.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
                                 {entities.map((entity, i) => (
                                     <div 
                                         key={i} 
-                                        className={`card py-4 px-6 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg border border-transparent ${selectedEntity === entity ? 'border-green-primary shadow-lg scale-105' : ''}`}
+                                        className={`w-full! flex-wrap! items-end justify-start card py-4 px-6 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg border border-transparent ${selectedEntity === entity ? 'border-green-primary shadow-lg scale-105' : ''}`}
                                         onClick={() => setSelectedEntity(entity)}
                                     >
                                         <div className="flex items-center gap-3 mb-2">
                                             <Box size={18} className="text-green-primary" />
                                             <span className="font-mono font-bold text-green-glow">{entity}</span>
-                                        </div>
-                                        <div className="space-y-1 opacity-60">
-                                            <div className="h-1.5 w-full bg-deep rounded-full"></div>
-                                            <div className="h-1.5 w-3/4 bg-deep rounded-full"></div>
                                         </div>
                                     </div>
                                 ))}
@@ -119,7 +115,7 @@ const DataModel = () => {
                                 </div>
                                 <button 
                                     className="p-1 hover:bg-bg-deep rounded-full text-muted transition-colors"
-                                    onClick={() => setSelectedEntity(null)}
+                                    onClick={() => setSelectedEntity(false)}
                                 >
                                     <X size={20} />
                                 </button>
@@ -132,14 +128,17 @@ const DataModel = () => {
 
                             <div className="flex-grow overflow-y-auto space-y-4">
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display mb-3">Schema Fields</p>
-                                    <div className="space-y-2">
-                                        {['id', 'created_at', 'updated_at', 'metadata', 'status'].map((field) => (
-                                            <div key={field} className="flex justify-between items-center p-2 card-inset text-xs">
-                                                <span className="font-mono font-bold text-text-primary">{field}</span>
-                                                <span className="badge text-[9px]">{field === 'id' ? 'UUID' : field.includes('at') ? 'TIMESTAMP' : 'JSONB'}</span>
-                                            </div>
-                                        ))}
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted font-display mb-3">Entity Properties</p>
+                                    <div className="space-y-2 flex flex-col gap-3">
+                                        {/* Since real fields aren't available from the current API, we show entity-specific generic info */}
+                                        <div className="flex justify-between items-center p-2 card-inset text-xs">
+                                            <span className="font-mono font-bold text-text-primary">Type</span>
+                                            <span className="badge text-[9px]">ENTITY</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-2 card-inset text-xs">
+                                            <span className="font-mono font-bold text-text-primary">Scope</span>
+                                            <span className="badge text-[9px]">INTERNAL</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -161,7 +160,7 @@ const DataModel = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-6 opacity-40">
+                        <div className=" flex flex-col items-center justify-center h-full text-center p-6 opacity-40">
                             <Box size={48} className="mb-4 text-green-muted" />
                             <p className="font-display font-bold">Select an Entity</p>
                             <p className="text-xs mt-2">Click on a node in the graph to view its detailed schema and relations.</p>

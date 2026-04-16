@@ -24,8 +24,24 @@ const Complexity = () => {
         }
     };
 
+    const avgComp = hotspots.length > 0 
+        ? (hotspots.reduce((acc, curr) => acc + (parseInt(curr.complexity) || 0), 0) / hotspots.length).toFixed(1)
+        : "0.0";
+    
+    const getDebtScore = (avg) => {
+        const val = parseFloat(avg);
+        if (val === 0) return "-";
+        if (val < 10) return "A";
+        if (val < 15) return "B+";
+        if (val < 20) return "B";
+        if (val < 25) return "C";
+        return "D";
+    };
+
+    const debtScore = getDebtScore(avgComp);
+
     return (
-        <div className="space-y-8 py-4">
+        <div className="space-y-8 py-4 flex flex-col gap-10">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold font-display flex items-center gap-3">
@@ -60,9 +76,9 @@ const Complexity = () => {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">Avg Complexity</span>
                         <Zap size={16} className="text-green-primary" />
                     </div>
-                    <p className="text-3xl font-bold font-mono text-green-glow">14.2</p>
+                    <p className="text-3xl font-bold font-mono text-green-glow">{avgComp}</p>
                     <div className="h-1 w-full bg-deep rounded-full overflow-hidden mt-2">
-                        <div className="h-full bg-green-primary w-[60%]"></div>
+                        <div className="h-full bg-green-primary" style={{ width: `${Math.min(100, parseFloat(avgComp) * 4)}%` }}></div>
                     </div>
                 </div>
                 <div className="card flex flex-col gap-2">
@@ -72,7 +88,7 @@ const Complexity = () => {
                     </div>
                     <p className="text-3xl font-bold font-mono text-amber-500">{hotspots.length || '0'}</p>
                     <div className="h-1 w-full bg-deep rounded-full overflow-hidden mt-2">
-                        <div className="h-full bg-amber-500 w-[20%]"></div>
+                        <div className="h-full bg-amber-500" style={{ width: `${Math.min(100, hotspots.length * 5)}%` }}></div>
                     </div>
                 </div>
                 <div className="card flex flex-col gap-2">
@@ -80,35 +96,45 @@ const Complexity = () => {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted font-display">Debt Score</span>
                         <ShieldAlert size={16} className="text-red-500" />
                     </div>
-                    <p className="text-3xl font-bold font-mono text-red-500">B-</p>
+                    <p className="text-3xl font-bold font-mono text-red-500">{debtScore}</p>
                     <div className="h-1 w-full bg-deep rounded-full overflow-hidden mt-2">
-                        <div className="h-full bg-red-500 w-[40%]"></div>
+                        <div className="h-full bg-red-500" style={{ width: debtScore === 'A' ? '10%' : debtScore === 'B+' ? '30%' : debtScore === 'B' ? '50%' : '80%' }}></div>
                     </div>
                 </div>
             </div>
 
-            {/* Chart Area Mockup */}
-            <div className="card">
+            {/* Chart Area */}
+            <div className="card flex flex-col">
                 <div className="flex items-center gap-2 mb-6 border-b border-green-muted/20 pb-4">
                     <TrendingUp size={20} className="text-green-primary" />
                     <h3 className="font-display font-bold text-lg">Complexity Distribution</h3>
                 </div>
-                <div className="card-inset h-[240px] flex items-end justify-around p-8">
-                    {[40, 70, 45, 90, 65, 30, 85, 50, 75, 60].map((height, i) => (
-                        <div 
-                            key={i} 
-                            className="w-8 rounded-t-lg transition-all duration-500 hover:scale-x-110 cursor-help relative group"
-                            style={{ 
-                                height: `${height}%`, 
-                                background: height > 80 ? 'var(--error)' : height > 60 ? 'var(--warning)' : 'var(--green-primary)',
-                                opacity: 0.8
-                            }}
-                        >
-                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-surface py-1 px-2 rounded shadow-sm border border-green-muted/20 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                <span className="font-mono text-[10px] text-green-glow">Value: {height}</span>
-                            </div>
+                <div className="h-fit card-inset h-[240px] flex gap-3 p-8 flex-wrap items-end justify-start">
+                    {hotspots.length > 0 ? (
+                        hotspots.slice(0, 15).map((item, i) => {
+                            const height = Math.min(100, (parseInt(item.complexity) || 0) * 3);
+                            return (
+                                <div 
+                                    key={i} 
+                                    className="w-fit w-8 rounded-t-lg transition-all duration-500 hover:scale-x-110 relative group"
+                                    style={{ 
+                                        height: `${height}%`, 
+                                        background: height > 80 ? 'var(--error)' : height > 60 ? 'var(--warning)' : 'var(--green-primary)',
+                                        opacity: 0.8
+                                    }}
+                                >
+                                    <div className="bg-bg-surface py-1 px-2 rounded shadow-sm border border-green-muted/20 transition-opacity whitespace-nowrap z-10">
+                                        <span className="font-mono text-[10px] text-green-glow">{item.file.split('/').pop()}: {item.complexity}</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="flex flex-col items-center justify-center w-full h-full opacity-30">
+                            <BarChart3 size={48} />
+                            <p className="text-xs font-mono mt-2">No data to visualize</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
 
@@ -127,7 +153,7 @@ const Complexity = () => {
                 {hotspots.length > 0 ? (
                     <div className="space-y-3">
                         {hotspots.map((item, index) => (
-                            <div key={index} className={`card-inset p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 ${item.complexity > 20 ? 'border-red-500' : 'border-amber-500'}`}>
+                            <div key={index} className={`card-inset mb-5! p-4 flex flex-col md:flex-row justify-between gap-10 border-l-4 ${item.complexity > 20 ? 'border-red-500' : 'border-amber-500'}`}>
                                 <div className="flex items-center gap-4">
                                     <div className="p-2 bg-bg-surface rounded shadow-sm">
                                         <FileCode size={20} className="text-green-primary" />

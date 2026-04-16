@@ -6,6 +6,7 @@ import { Code2, Loader2, GitBranch, Star, ChevronRight } from 'lucide-react';
 const GetRepo = () => {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [repoMeta, setRepoMeta] = useState(null);
   const { repoId, setRepoId } = useRepo();
 
   const handleFetchRepoId = async (inputUrl) => {
@@ -14,6 +15,7 @@ const GetRepo = () => {
     try {
       const result = await fetchRepoId({ url: inputUrl });
       setRepoId(result.repo_id);
+      setRepoMeta(result.metadata || null);
     } catch (error) {
       console.error("Fetch Error:", error);
     } finally {
@@ -65,10 +67,13 @@ const GetRepo = () => {
                 <div>
                   <p className="font-mono font-bold text-green-glow">{repoId}</p>
                   <div className="flex gap-3 mt-1">
-                    <span className="badge">JavaScript</span>
-                    <div className="flex items-center gap-1 text-[10px] font-mono text-muted">
-                      <Star size={10} /> 1.2k
-                    </div>
+                    {repoMeta?.language && <span className="badge">{repoMeta.language}</span>}
+                    {repoMeta?.stars !== undefined && (
+                      <div className="flex items-center gap-1 text-[10px] font-mono text-muted">
+                        <Star size={10} /> {repoMeta.stars}
+                      </div>
+                    )}
+                    {!repoMeta && <span className="badge">Connected</span>}
                   </div>
                 </div>
               </div>

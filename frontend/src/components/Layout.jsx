@@ -1,11 +1,12 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import {
-  Home, Upload, GitBranch,
+  Home, Upload, GitBranch, ScrollText,
   Compass, BarChart3, Database,
-  Settings, HelpCircle
+  Settings, HelpCircle, MessageCircle
 } from 'lucide-react';
 import './Layout.css';
+import Chat from './Chat';
 
 const navItems = [
   { icon: Home,       label: 'Home',        path: '/'           },
@@ -15,6 +16,8 @@ const navItems = [
   { icon: Compass,    label: 'Orient',      path: '/orient'     },
   { icon: BarChart3,  label: 'Complexity',  path: '/complexity' },
   { icon: Database,   label: 'Data Model',  path: '/data-model' },
+  { icon: ScrollText, label: 'Report',      path: '/report'      },
+  { icon: MessageCircle,       label: 'Chat',         path: '/chat' },
 ];
 
 const Layout = () => {

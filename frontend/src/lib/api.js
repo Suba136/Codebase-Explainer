@@ -100,3 +100,57 @@ export const test = async (repoId) => {
 
   return await response.json();
 };
+
+export const run = async (repoId) => {
+  const response = await fetch(`${API_BASE_URL}/agent/run/${repoId}`, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+    },
+    body: '', 
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Agent run failed: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
+export const report = async (repoId) => {
+  const response = await fetch(`${API_BASE_URL}/agent/report/${repoId}`, {
+    method: 'GET',
+    headers: {
+      'accept': 'application/json',
+    },
+    body: JSON.stringify(), 
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Report generation failed: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
+export const chat = async (repoId, question) => {
+  const response = await fetch(`${API_BASE_URL}/chat/${repoId}`, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      question: question
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Chat failed: ${response.status}`);
+  }
+
+  return await response.json();
+};
